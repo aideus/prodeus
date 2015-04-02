@@ -63,19 +63,18 @@
         }                                       \
     }                                           \
 }
-#endif
 
 class GaussianBlur: public Expression {
 public:
     GaussianBlur(const cv::Mat &src, int ksize, double sigma): Expression() {
-        children.push_back(new Value(src));
-        children.push_back(new Value(ksize));
-        children.push_back(new Value(sigma));
+        children.push_back(make_shared<Value>(src));
+        children.push_back(make_shared<Value>(ksize));
+        children.push_back(make_shared<Value>(sigma));
     }
     GaussianBlur(const Expression &src, const Expression &ksize, const Expression &sigma):
         Expression(src, ksize, sigma) { }
-    virtual GaussianBlur* clone() const { return new GaussianBlur(*this); }
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual ExpressionP clone() const { return make_shared<GaussianBlur>(*this); }
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "GaussianBlur"; }
     
 };
@@ -83,19 +82,19 @@ public:
 class DrawCircle: public Expression {
 public:
     DrawCircle(const cv::Mat &src, int x, int y, int rad, int gray): Expression() {
-        children.push_back(new Value(src));
-        children.push_back(new Value(x));
-        children.push_back(new Value(y));
-        children.push_back(new Value(rad));
-        children.push_back(new Value(gray));
+        children.push_back(make_shared<Value>(src));
+        children.push_back(make_shared<Value>(x));
+        children.push_back(make_shared<Value>(y));
+        children.push_back(make_shared<Value>(rad));
+        children.push_back(make_shared<Value>(gray));
     }
     DrawCircle(const cv::Mat &src, int x, int y, int rad, int gray, int thickness): Expression() {
-        children.push_back(new Value(src));
-        children.push_back(new Value(x));
-        children.push_back(new Value(y));
-        children.push_back(new Value(rad));
-        children.push_back(new Value(gray));
-		children.push_back(new Value(thickness));
+        children.push_back(make_shared<Value>(src));
+        children.push_back(make_shared<Value>(x));
+        children.push_back(make_shared<Value>(y));
+        children.push_back(make_shared<Value>(rad));
+        children.push_back(make_shared<Value>(gray));
+		children.push_back(make_shared<Value>(thickness));
     }
     DrawCircle(const Expression &src, const Expression &x, const Expression &y,
                const Expression &rad, const Expression &gray):
@@ -103,8 +102,8 @@ public:
     DrawCircle(const Expression &src, const Expression &x, const Expression &y,
                const Expression &rad, const Expression &gray, const Expression &thickness):
         Expression(src, x, y, rad, gray, thickness) { }
-    virtual DrawCircle* clone() const { return new DrawCircle(*this); }
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual ExpressionP clone() const { return make_shared<DrawCircle>(*this); }
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "DrawCircle"; }
     
 };
@@ -115,21 +114,23 @@ public:
         shape_circle = 0
     };
     Drawer(const Expression &image, const Expression &objects): Expression(image, objects) {}
-    virtual Drawer* clone() const { return new Drawer(*this); }
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual ExpressionP clone() const { return make_shared<Drawer>(*this); }
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "Drawer"; }
 };
 
 class MatDiff2: public Expression {
 public:
     MatDiff2(const cv::Mat &mat1, const cv::Mat &mat2): Expression() {
-        children.push_back(new Value(mat1));
-        children.push_back(new Value(mat2));
+        children.push_back(make_shared<Value>(mat1));
+        children.push_back(make_shared<Value>(mat2));
     }
     MatDiff2(const Expression &mat1, const Expression &mat2): Expression(mat1, mat2) { }
-    virtual MatDiff2* clone() const { return new MatDiff2(*this); }
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual ExpressionP clone() const { return make_shared<MatDiff2>(*this); }
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "MatDiff2"; }
 };
 
 #endif /* defined(__rand_expr__cvprob__) */
+
+#endif

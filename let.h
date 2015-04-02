@@ -16,10 +16,10 @@ class Define: public Expression {
 public:
     Define(const Symbol &child1, const Expression &child2): Expression(child1, child2) {}
     Define(const string &child1, const Expression &child2): Expression(Symbol(child1), child2) {}
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    virtual ExpressionP reeval(Environment *pEnv, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false);
-    virtual Define* clone() const { return new Define(*this); }
-    Expression* clone_rec_and_substitute(Environment *pEnv, vector<class Symbol *> &args) const;
+    virtual ExpressionP clone() const { return make_shared<Define>(*this); }
+    ExpressionP clone_rec_and_substitute(Environment *pEnv, vector<SymbolP> &args) const;
     virtual string name() const { return "Define"; }
 };
 
@@ -31,10 +31,10 @@ public:
     Block(const Expression &child1, const Expression &child2): Expression(child1, child2) {}
     Block(const Expression &child1, const Expression &child2, const Expression &child3):
         Expression(child1, child2, child3) {}
-    virtual Block* clone() const { return new Block(*this); }
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    virtual ExpressionP clone() const { return make_shared<Block>(*this); }
+    virtual ExpressionP reeval(Environment *pEnv, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false);
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "Block"; }
 };
 

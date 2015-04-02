@@ -11,7 +11,7 @@
 
 #include "expression.h"
 
-Expression &include_libdefs();
+ExpressionP include_libdefs();
 
 extern Symbol repeat, maplist, foldr;
 

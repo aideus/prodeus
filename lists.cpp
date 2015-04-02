@@ -12,48 +12,48 @@
 
 List::List(int num, double v0, ...): Expression()
 {
-    v = new vector<Data>();
+    v.set_list_assume_ownership(new vector<Data>());
     va_list arguments;
     va_start (arguments, num);
-    children.push_back(new Value(v0));
+    children.push_back(make_shared<Value>(v0));
     for(int n = 1; n < num; n++) {
-        children.push_back(new Value(va_arg(arguments, double)));
+        children.push_back(make_shared<Value>(va_arg(arguments, double)));
     }
     va_end(arguments);
     // actually, can be evaluated immediately
     // todo? move this functionality to Value (fixed list as value)
 }
 
-void List::calcValue(double tp, Expression *pPartner)
+void List::calcValue(double tp, ExpressionP pPartner)
 {
     vector<Data> *l = new vector<Data>();
     for(int i = 0; i < (int)children.size(); i++) {
         Data vd = children[i]->getValue();
         l->push_back(vd);
     }
-    v = l;
+    v.set_list_assume_ownership(l);
 }
 
 //todo: bRnd!!
 // todo: this functionality can/should be moved to Data
-void Cons::calcValue(double tp, Expression *pPartner)
+void Cons::calcValue(double tp, ExpressionP pPartner)
 {
     vector<Data> *l = new vector<Data>();
     *l = *(children[0]->getValue().getList());
     l->push_back(children[1]->getValue());
-    v = l;  // todo: if v.l is already allocated?.. = should clear allocated list
+    v.set_list_assume_ownership(l);
 }
 
-void Cdr_::calcValue(double tp, Expression *pPartner)
+void Cdr_::calcValue(double tp, ExpressionP pPartner)
 {
     vector<Data> *l = new vector<Data>();
     *l = *(children[0]->getValue().getList()); // todo? can be done more efficiently.. is it correct?
     l->pop_back();
-    v = l;
+    v.set_list_assume_ownership(l);
     // forceRnd !!
 }
 
-void Car_::calcValue(double tp, Expression *pPartner)
+void Car_::calcValue(double tp, ExpressionP pPartner)
 {
     // it might seem that it is not necessary to evaluate the list for Car parent,
     // but lambda or whatever can be passed, so evaluation is necessary in general
@@ -65,31 +65,25 @@ void Car_::calcValue(double tp, Expression *pPartner)
 }
 
 
-void ListRef::calcValue(double tp, Expression *pPartner)
+void ListRef::calcValue(double tp, ExpressionP pPartner)
 {
     v = (*children[0]->getValue().getList())[children[1]->getValue().getInt()];
     v.forceRnd(v.isRnd() || children[1]->getValue().isRnd());
 }
 
-void Nullp_::calcValue(double tp, Expression *pPartner)
+void Nullp_::calcValue(double tp, ExpressionP pPartner)
 {
     Data d = children[0]->getValue();
     v = d.getList()->empty();
     v.forceRnd(d.isRnd());
 }
 
-void Length_::calcValue(double tp, Expression *pPartner)
+void Length_::calcValue(double tp, ExpressionP pPartner)
 {
     Data d = children[0]->getValue();
     v = (int)d.getList()->size();
     v.forceRnd(d.isRnd());
 }
 
-Cdr_ Cdr(const Expression &lst) { return Cdr_(&lst); }
 
-Car_ Car(const Expression &lst) { return Car_(&lst); }
-
-Nullp_ Nullp(const Expression &lst) { return Nullp_(&lst); }
-
-Length_ Length(const Expression &lst) { return Length_(&lst); }
 

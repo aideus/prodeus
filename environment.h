@@ -21,30 +21,30 @@ class Environment {
 public:
     Environment() {
         // top-level environment is added immediately
-        map <Index, Expression*> um;
+        map <Index, ExpressionP> um;
         es.push_back(um);
     }
-    Expression *find_symbol(Index id) {
+    ExpressionP find_symbol(Index id) {
         for(int i = (int)es.size()-1; i >= 0; i--) {
-            map<Index, Expression*>::const_iterator got = es[i].find(id);
+            map<Index, ExpressionP>::const_iterator got = es[i].find(id);
             if(got != es[i].end()) return got->second;
         }
         // todo?
         return NULL;
     }
     void add_level() {
-        map <Index, Expression*> um;
+        map <Index, ExpressionP> um;
         es.push_back(um);
     }
     void delete_level() {
         es.pop_back();
     }
-    void push_last(Index id, Expression *pVal) {
+    void push_last(Index id, ExpressionP pVal) {
         // todo: check if exists
         es.back()[id] = pVal;
     }
 protected:
-    vector<map <Index, Expression*>> es; // vector <>
+    vector<map <Index, ExpressionP> > es; // vector <>
 };
 
 #endif /* defined(__rand_expr__environment__) */

@@ -31,18 +31,18 @@ public:
 #ifdef SUPPORT_OPENCV
     Value(cv::Mat *m): Expression() {
         bEvaluated = true;
-        v = m;
+        v = *m;
     }
     Value(const cv::Mat &m): Expression() {
         bEvaluated = true;
         v = m;
     }
 #endif
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    virtual ExpressionP reeval(Environment *pEnv, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false)
-        { return this; /* do nothing */ } //todo? Verbose; cloning?
+        { return shared_from_this(); /* do nothing */ } //todo? Verbose; cloning?
     // virtual void calcValue(double tp = 1.0) {}; // nothing to calculate
-    virtual Value* clone() const { return new Value(*this); }
+    virtual ExpressionP clone() const { return make_shared<Value>(*this); }
     virtual string name() const { return "V"; }
 };
 typedef Value V;

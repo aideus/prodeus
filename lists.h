@@ -16,7 +16,7 @@
 
 class List: public Expression {
 public:
-    List(): Expression() { v = new vector<Data>(); }
+    List(): Expression() { v.set_list_assume_ownership(new vector<Data>()); }
     List(int num, double v0, ...);
     List(const Expression &child1, const Expression &child2):
         Expression(child1, child2) {}
@@ -25,10 +25,9 @@ public:
     List(const Expression &child1, const Expression &child2, const Expression &child3,
          const Expression &child4): Expression(child1, child2, child3, child4) {}
     // todo... int, Expression, ...
-    virtual List* clone() const { return new List(*this); } // todo: list copy?
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual ExpressionP clone() const { return make_shared<List>(*this); } // todo: list copy?
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "List"; }
-    ~List() { /*todo?*/ }
 };
 
 // cons == push_back; cdr == pop_back
@@ -37,69 +36,67 @@ public:
 class Cons: public Expression {
 public:
     Cons(const Expression &lst, const Expression &val): Expression(lst, val) { }
-    virtual Cons* clone() const { return new Cons(*this); } // todo: list copy?
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual ExpressionP clone() const { return make_shared<Cons>(*this); } // todo: list copy?
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "Cons"; }
-    ~Cons() { /*todo?*/ }
 };
-
 
 class ListRef: public Expression {
 public:
     ListRef(const Expression &lst, const Expression &val): Expression(lst, val) { }
-    virtual ListRef* clone() const { return new ListRef(*this); }  
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual ExpressionP clone() const { return make_shared<ListRef>(*this); }  
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "ListRef"; }
-    ~ListRef() { /*todo?*/ }
 };
 
 
 class Cdr_: public Expression {
 public:
-    Cdr_(const Expression *lst): Expression(lst) { }
-    virtual Cdr_* clone() const { return new Cdr_(*this); } // todo: list copy?
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    Cdr_(const ExpressionConstP lst): Expression(lst) { }
+    Cdr_(const Expression& lst, bool): Expression(lst, true) { }
+    virtual ExpressionP clone() const { return make_shared<Cdr_>(*this); } // todo: list copy?
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "Cdr"; }
-    ~Cdr_() { /*todo?*/ }
 };
 
-Cdr_ Cdr(const Expression &lst);
+inline Cdr_ Cdr(const Expression &lst) { return Cdr_(lst, true); }
 
 
 class Car_: public Expression {
 public:
-    Car_(const Expression *lst): Expression(lst) { }
-    virtual Car_* clone() const { return new Car_(*this); } // todo: list copy?
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    Car_(const ExpressionConstP lst): Expression(lst) { }
+    Car_(const Expression& lst, bool): Expression(lst, true) { }
+    virtual ExpressionP clone() const { return make_shared<Car_>(*this); } // todo: list copy?
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "Car"; }
     ~Car_() { /*todo?*/ }
 };
 
-Car_ Car(const Expression &lst);
+inline Car_ Car(const Expression &lst) { return Car_(lst, true); }
 
 
 class Nullp_: public Expression {
 public:
-    Nullp_(const Expression *lst): Expression(lst) { }
-    virtual Nullp_* clone() const { return new Nullp_(*this); } // todo: list copy?
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    Nullp_(const ExpressionConstP lst): Expression(lst) { }
+    Nullp_(const Expression& lst, bool): Expression(lst, true) { }
+    virtual ExpressionP clone() const { return make_shared<Nullp_>(*this); } // todo: list copy?
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "Nullp"; }
-    ~Nullp_() { /*todo?*/ }
 };
 
-Nullp_ Nullp(const Expression &lst);
+inline Nullp_ Nullp(const Expression &lst) { return Nullp_(lst, true); }
 
 
 class Length_: public Expression {
 public:
-    Length_(const Expression *lst): Expression(lst) { }
-    virtual Length_* clone() const { return new Length_(*this); } // todo: list copy?
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    Length_(const ExpressionConstP lst): Expression(lst) { }
+    Length_(const Expression& lst, bool): Expression(lst, true) { }
+    virtual ExpressionP clone() const { return make_shared<Length_>(*this); } // todo: list copy?
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "Length"; }
-    ~Length_() { /*todo?*/ }
 };
 
-Length_ Length(const Expression &lst);
+inline Length_ Length(const Expression &lst) {return Length_(lst, true);}
 
 
 // TODO: add ListRef, Append, ...

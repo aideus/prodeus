@@ -9,11 +9,7 @@
 
 //#include <typeinfo>
 #include "rand_expr.h"
-
-Expression::~Expression()
-{
-    // ...
-}
+#include "environment.h"
 
 const bool Expression::isChildrenRnd() const
 {
@@ -23,14 +19,14 @@ const bool Expression::isChildrenRnd() const
     return bR;
 }
 
-Expression *Expression::reeval(Environment *pEnv, Expression *pPartner, double tp, bool bForceEval)
+ExpressionP Expression::reeval(Environment* pEnv, ExpressionP pPartner, double tp, bool bForceEval)
 {
-    if(pPartner != NULL && !shallow_equal(pPartner)) {
+    if(pPartner && !shallow_equal(pPartner)) {
         // it is probably possible to choose the parent randomly, but they are already random,
         // so we prefer the first parent for consistency
-        pPartner = NULL;
+        pPartner = ExpressionP(); //create empty pointer (equivalent of NULL)
     }
-    Expression *pEvaluated = this;
+    ExpressionP pEvaluated = shared_from_this();
     if(bForceEval || !bEvaluated || v.isRnd()) {
 #ifdef VERBOSE_EVAL
         cout << "Evaluating " << name() << "..." << endl;
@@ -58,36 +54,34 @@ Expression *Expression::reeval(Environment *pEnv, Expression *pPartner, double t
     return pEvaluated;
 }
 
-Expression *Expression::eval()
+ExpressionP Expression::eval()
 {
-    Environment *pEnv = new Environment();
-    Expression *p = reeval(pEnv, NULL, 1.0, true);
-    delete pEnv;
-    return p;
+    Environment Env;
+    return reeval(&Env, ExpressionP(), 1.0, true);
 }
 
-bool Expression::shallow_equal(Expression *pExpr)
+bool Expression::shallow_equal(ExpressionP pExpr)
 {
     return name() == pExpr->name() && children.size() == pExpr->children.size();
     // REM: implement more detailed comparison for Value, Symbol, ?Apply
 }
 
 
-Expression* Expression::clone_rec() const {
-    Expression *pClone = clone();
+ExpressionP Expression::clone_rec() const {
+    ExpressionP pClone = clone();
     pClone->children.clear();
     for(ExpCIter it = children.begin(); it != children.end(); ++it)
         pClone->children.push_back((*it)->clone_rec());
     return pClone;
 }
 
-Expression* Expression::clone_rec_and_substitute(Environment *pEnv, vector<Symbol *> &args) const
+ExpressionP Expression::clone_rec_and_substitute(Environment* pEnv, vector<SymbolP> &args) const
 {
     bool bRnd = v.isRnd();
-    Expression *pClone = clone();
+    ExpressionP pClone = clone();
     pClone->children.clear();
     for(ExpCIter it = children.begin(); it != children.end(); ++it) {
-        Symbol *s = dynamic_cast<Symbol *>(*it);
+        SymbolP s = dynamic_pointer_cast<Symbol>(*it);
         bool bReplace = true;
         if(s != NULL) {
             for(int i = 0; i < (int)args.size(); i++) {
@@ -97,7 +91,7 @@ Expression* Expression::clone_rec_and_substitute(Environment *pEnv, vector<Symbo
                 }
             }
             if(bReplace) {
-                Expression *pSubs = pEnv->find_symbol(s->getID());
+                ExpressionP pSubs = pEnv->find_symbol(s->getID());
                 if(pSubs != NULL) {
                     //pClone->children.push_back(pSubs->clone_rec_and_substitute(pEnv, args));
                     *pClone << Block(Define(*s, *pSubs), *s);
@@ -134,7 +128,7 @@ string Expression::to_s()
      ss << address;
      s = "[" + ss.str() + "]";*/
     if(!children.empty()) s += "(";
-    for(vector<Expression *>::iterator it = children.begin(); it != children.end(); ++it)
+    for(vector<ExpressionP>::iterator it = children.begin(); it != children.end(); ++it)
         s += (*it)->to_s() + " ";
     if(!children.empty()) s += ")";
     s += "=" + v.to_s();
@@ -144,105 +138,105 @@ string Expression::to_s()
 
 // ================== Syntactic sugar operators ==================
 
-Expression& Expression::operator<(const Expression &expr) {
-    return *(new Ls(*this, expr));
+Ls Expression::operator<(const Expression &expr) {
+    return Ls(*this, expr);
 }
-Expression& Expression::operator<(int n) { return *this < V(n); }
-Expression& Expression::operator<(double d) { return *this < V(d); }
+Ls Expression::operator<(int n) { return *this < V(n); }
+Ls Expression::operator<(double d) { return *this < V(d); }
 
-Expression& Expression::operator>(const Expression &expr) {
-    return *(new Gt(*this, expr));
+Gt Expression::operator>(const Expression &expr) {
+    return Gt(*this, expr);
 }
-Expression& Expression::operator>(int n) { return *this > V(n); }
-Expression& Expression::operator>(double d) { return *this > V(d); }
+Gt Expression::operator>(int n) { return *this > V(n); }
+Gt Expression::operator>(double d) { return *this > V(d); }
 
-Expression& Expression::operator<=(const Expression &expr) {
-    return *(new Lse(*this, expr));
+Lse Expression::operator<=(const Expression &expr) {
+    return Lse(*this, expr);
 }
-Expression& Expression::operator<=(int n) { return *this <= V(n); }
-Expression& Expression::operator<=(double d) { return *this <= V(d); }
+Lse Expression::operator<=(int n) { return *this <= V(n); }
+Lse Expression::operator<=(double d) { return *this <= V(d); }
 
-Expression& Expression::operator>=(const Expression &expr) {
-    return *(new Gte(*this, expr));
+Gte Expression::operator>=(const Expression &expr) {
+    return Gte(*this, expr);
 }
-Expression& Expression::operator>=(int n) { return *this >= V(n); }
-Expression& Expression::operator>=(double d) { return *this >= V(d); }
+Gte Expression::operator>=(int n) { return *this >= V(n); }
+Gte Expression::operator>=(double d) { return *this >= V(d); }
 
 
 
-Expression& Expression::operator+(const Expression &expr) {
+Add Expression::operator+(const Expression &expr) {
     //  TODO? Values can be processed more efficiently
-    return *(new Add(*this, expr));
+    return Add(*this, expr);
 }
-Expression& Expression::operator+(int n) { return *this + V(n); }
-Expression& Expression::operator+(double d) { return *this + V(d); }
+Add Expression::operator+(int n) { return *this + V(n); }
+Add Expression::operator+(double d) { return *this + V(d); }
 
 
-Expression& Expression::operator-(const Expression &expr) {
+Sub Expression::operator-(const Expression &expr) {
     //  TODO? Values can be processed more efficiently
-    return *(new Sub(*this, expr));
+    return Sub(*this, expr);
 }
-Expression& Expression::operator-(int n) { return *this - V(n); }
-Expression& Expression::operator-(double d) { return *this - V(d); }
+Sub Expression::operator-(int n) { return *this - V(n); }
+Sub Expression::operator-(double d) { return *this - V(d); }
 
 
-Expression& Expression::operator*(const Expression &expr) {
+Mult Expression::operator*(const Expression &expr) {
     //  TODO? Values can be processed more efficiently
-    return *(new Mult(*this, expr));
+    return Mult(*this, expr);
 }
-Expression& Expression::operator*(int n) { return *this * V(n); }
-Expression& Expression::operator*(double d) { return *this * V(d); }
+Mult Expression::operator*(int n) { return *this * V(n); }
+Mult Expression::operator*(double d) { return *this * V(d); }
 
-Expression& Expression::operator/(const Expression &expr) {
+Div Expression::operator/(const Expression &expr) {
     //  TODO? Values can be processed more efficiently
-    return *(new Div(*this, expr));
+    return Div(*this, expr);
 }
-Expression& Expression::operator/(int n) { return *this / V(n); }
-Expression& Expression::operator/(double d) { return *this / V(d); }
+Div Expression::operator/(int n) { return *this / V(n); }
+Div Expression::operator/(double d) { return *this / V(d); }
 
-Expression& Expression::operator%(const Expression &expr) {
+Remainder Expression::operator%(const Expression &expr) {
     //  TODO? Values can be processed more efficiently
-    return *(new Remainder(*this, expr));
+    return Remainder(*this, expr);
 }
-Expression& Expression::operator%(int n) { return *this % V(n); }
-Expression& Expression::operator%(double d) { return *this % V(d); }
+Remainder Expression::operator%(int n) { return *this % V(n); }
+Remainder Expression::operator%(double d) { return *this % V(d); }
 
 
-Expression& Expression::operator()(const Expression &arg1, const Expression &arg2,
+Apply Expression::operator()(const Expression &arg1, const Expression &arg2,
                                    const Expression &arg3) {
-    return *(new Apply(*this, arg1, arg2, arg3));
+    return Apply(*this, arg1, arg2, arg3);
 }
 
-Expression& Expression::operator()(const Expression &arg1, const Expression &arg2) {
-    return *(new Apply(*this, arg1, arg2));
+Apply Expression::operator()(const Expression &arg1, const Expression &arg2) {
+    return Apply(*this, arg1, arg2);
 }
 
-Expression& Expression::operator()(const Expression &expr) {
-    return *(new Apply(*this, expr));
+Apply Expression::operator()(const Expression &expr) {
+    return Apply(*this, expr);
 }
 
-Expression& Expression::operator()(double d) {
-    return *(new Apply(*this, V(d)));
+Apply Expression::operator()(double d) {
+    return Apply(*this, V(d));
 }
 
-Expression& Expression::operator()() {
-    return *(new Apply(this));
+Apply Expression::operator()() {
+    return Apply(*this, true);
 }
 
 // todo: can be not only for Lists... generalize?
-Expression& Expression::operator[](int n)
+ListRef Expression::operator[](int n)
 {
-    return *(new ListRef(*this, V(n)));
+    return ListRef(*this, V(n));
 }
 
-Expression& Expression::operator[](const Expression &n)
+ListRef Expression::operator[](const Expression &n)
 {
-    return *(new ListRef(*this, n));
+    return ListRef(*this, n);
 }
 
 
 
-Expression *getExprChild(Expression *pExpr, int i)
+ExpressionP getExprChild(ExpressionP pExpr, int i)
 {
-    return pExpr == NULL ? NULL : pExpr->getChild(i);
+   return pExpr ? pExpr->getChild(i) : ExpressionP();
 }

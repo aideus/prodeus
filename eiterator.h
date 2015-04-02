@@ -19,7 +19,7 @@ public:
         parent_first = 0,
         child_first = 1
     };
-    EIterator(Expression *root, Order o_): o(o_) {
+    EIterator(ExpressionP root, Order o_): o(o_) {
         //switch(o)
         current = root;
     }
@@ -34,7 +34,7 @@ public:
                     return *this;
                 }
                 while(stack.size() != 0) {
-                    Expression *parent = stack.back();
+                    ExpressionP parent = stack.back();
                     int idx = indices.back();
                     if(idx < parent->getChildrenNum() - 1) {
                         current = parent->getChild(idx + 1);
@@ -52,12 +52,12 @@ public:
                 return *this;
         }
     }
-    Expression* operator*() { return current; }
+    ExpressionP operator*() { return current; }
     
 private:
-    vector<Expression *> stack;
+    vector<ExpressionP> stack;
     vector<int> indices;
-    Expression *current;
+    ExpressionP current;
     Order o;
 };
 

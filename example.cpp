@@ -33,7 +33,8 @@ void calcHSHist(Mat im, Mat &hist)
 int main(int argc, const char * argv[])
 {
     // string s = typeid(YourClass).name()
-    srand((unsigned int)time(NULL) /*1232453*/), rand();
+//    srand((unsigned int)1232453); rand();
+    srand(time(NULL)); rand();
     Environment env;
 
     //Mat img = imread("fruits.jpg"/*, IMREAD_GRAYSCALE*/);
@@ -53,7 +54,7 @@ int main(int argc, const char * argv[])
     }*/
 
 
-    Expression *p = new Block();
+    ExpressionP p = make_shared<Block>();
     //Symbol f("f"), x("x"), y("y"), n("n"), im("im"), imx("imx"), imy("imy");
     //Symbol nClust("nClust"), centers("centers"), center("center"), im("im");
     //cv::Mat img = Mat::zeros(127, 128, CV_8UC1);
@@ -75,7 +76,7 @@ int main(int argc, const char * argv[])
 
 #if 1
     Symbol im, imc, im0, n, circs, x, y, circ, r0;
-    p = GPQuery(List() << include_libdefs()
+    p = sGPQuery(List() << include_libdefs()
                        //<< Define(n, V(27))
                        << Define(n, V(6))
                        << Define(circs,
@@ -93,7 +94,7 @@ int main(int argc, const char * argv[])
                        //<< Define(imc, ::GaussianBlur(im0, V(13), V(0)) * 5)
                        << im0 //List(im0, circs)
                        << Log(MatDiff2(im0/*c*/, V(img))) * V(img.cols * img.rows)
-                       ).reeval(&env, NULL, 0.005);
+                       )->reeval(&env, NULL, 0.005);
     cout << p->getValue() << endl;
 #endif
 
@@ -102,7 +103,7 @@ int main(int argc, const char * argv[])
     (::GaussianBlur(DrawCircle(V(Mat::zeros(img.rows, img.cols, CV_8UC1)),
                               V(50), V(50), V(10), V(255)),
                    V(13), V(0)) * 5).eval()->getValue();*/
-    cv::waitKey();
+//    cv::waitKey();
 
     //p = p->reeval(&env);
     //cout << p->getChild(0)->getValue() << endl;

@@ -22,14 +22,14 @@ public:
     Apply(const Expression &func, const Expression &arg1,
           const Expression &arg2, const Expression &arg3):
         Expression(func, arg1, arg2, arg3) {}
-    Apply(const Expression *func): Expression(func) {}
-    virtual Apply* clone() const { return new Apply(*this); }
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    Apply(const Expression& func, bool): Expression(func, true) {}
+    virtual ExpressionP clone() const { return make_shared<Apply>(*this); }
+    virtual ExpressionP reeval(Environment* Env, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false);
     virtual string name() const { return "Apply"; }
 };
 //typedef Apply A;
 
-Apply Apply0(const Expression &func);
+inline Apply Apply0(const Expression &func) {return Apply(func, true);}
 
 #endif /* defined(__rand_expr__apply__) */

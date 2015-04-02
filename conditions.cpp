@@ -8,16 +8,16 @@
 
 #include "rand_expr.h"
 
-Expression* If::reeval(Environment *pEnv, Expression *pPartner, double tp, bool bForceEval)
+ExpressionP If::reeval(Environment* pEnv, ExpressionP pPartner, double tp, bool bForceEval)
 {
-    If *pEvaluated = this;
+    IfP pEvaluated = static_pointer_cast<If>(shared_from_this());
     if(bForceEval || !bEvaluated || v.isRnd()) {
 #ifdef VERBOSE_EVAL
         cout << "Evaluating If..." << endl;
 #endif
-        pEvaluated = clone();
+        pEvaluated = static_pointer_cast<If>(clone());
         pEvaluated->children.clear();
-        Expression *pCond = children[0]->reeval(pEnv, getExprChild(pPartner, 0), tp, bForceEval);
+        ExpressionP pCond = children[0]->reeval(pEnv, getExprChild(pPartner, 0), tp, bForceEval);
         pEvaluated->children.push_back(pCond);
         if(pCond->getValue().getInt()) {
             pEvaluated->children.push_back(children[1]->reeval(pEnv,
@@ -40,7 +40,7 @@ Expression* If::reeval(Environment *pEnv, Expression *pPartner, double tp, bool 
     return pEvaluated;
 }
 
-void If::calcValue(double tp, Expression *pPartner)
+void If::calcValue(double tp, ExpressionP pPartner)
 {
     if(children[0]->getValue().getInt()) {
         v = children[1]->getValue();

@@ -8,10 +8,10 @@
 
 #include "rand_expr.h"
 
-Expression* Lambda::reeval(Environment *pEnv, Expression *pPartner,
+ExpressionP Lambda::reeval(Environment *pEnv, ExpressionP pPartner,
                            double tp, bool bForceEval)
 {
-    Lambda *pEvaluated = this;
+    LambdaP pEvaluated = static_pointer_cast<Lambda>(shared_from_this());
     if(bForceEval || !bEvaluated || v.isRnd()) {
 #ifdef VERBOSE_EVAL
         cout << "Evaluating Lambda..." << endl;
@@ -22,8 +22,8 @@ Expression* Lambda::reeval(Environment *pEnv, Expression *pPartner,
         // TODO: actually, should be evaluated to closure
         // TODO: or alternatively, we can (recursively) replace all symbols in *this with their values
         // from the environment
-        pEvaluated = clone();
-        vector<Symbol *> args;
+        pEvaluated = static_pointer_cast<Lambda>(clone());
+        vector<SymbolP > args;
         pEvaluated->v = clone_rec_and_substitute(pEnv, args);
         pEvaluated->v.forceRnd(pEvaluated->v.getExpression()->isRnd()); // randomness is passed via expression... 
         // todo: forceRnd()... are random substitutions made
@@ -36,22 +36,22 @@ Expression* Lambda::reeval(Environment *pEnv, Expression *pPartner,
     return pEvaluated;
 }
 
-Expression* Lambda::clone_rec_and_substitute(Environment *pEnv, vector<class Symbol *> &args) const
+ExpressionP Lambda::clone_rec_and_substitute(Environment *pEnv, vector<SymbolP> &args) const
 {
-    Lambda *pClone = clone();
+    LambdaP pClone = static_pointer_cast<Lambda>(clone());
     pClone->children.clear();
     // parsing formal arguments
     for(int i = 0; i < (int)children.size()-1; i++) {
-        args.push_back(dynamic_cast<Symbol *>(children[i]));
+        args.push_back(dynamic_pointer_cast<Symbol>(children[i]));
         children[i]->forceEvaluated(false);
         pClone->children.push_back(children[i]->clone());
     }
-    Expression *pCh = children.back()->clone_rec_and_substitute(pEnv, args);
+    ExpressionP pCh = children.back()->clone_rec_and_substitute(pEnv, args);
     pClone->v.forceRnd(v.isRnd() || pCh->getValue().isRnd());
     pClone->children.push_back(pCh);
     pClone->bEvaluated = false;
     return pClone;
 }
 
-Lambda Lambda0(const Expression &body) { return Lambda(&body); }
+Lambda Lambda0(const Expression &body) { return Lambda(body, true); }
 

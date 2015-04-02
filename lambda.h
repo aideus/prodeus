@@ -14,17 +14,18 @@
 
 class Lambda: public Expression {
 public:
-    Lambda(const Expression *body): Expression(body) { }
+    Lambda(const ExpressionP body):       Expression(body) { }
+    Lambda(const Expression& body, bool): Expression(body, true) { }
     Lambda(const Symbol &arg1, const Expression &body): Expression(arg1, body) { }
     Lambda(const Symbol &arg1, const Symbol &arg2, const Expression &body):
         Expression(arg1, arg2, body) { }
     Lambda(const Symbol &arg1, const Symbol &arg2,
            const Symbol &arg3, const Expression &body):
         Expression(arg1, arg2, arg3, body) { }
-    Expression* clone_rec_and_substitute(Environment *pEnv, vector<class Symbol *> &args) const;
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    ExpressionP clone_rec_and_substitute(Environment* pEnv, vector<SymbolP> &args) const;
+    virtual ExpressionP reeval(Environment *pEnv, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false);
-    virtual Lambda* clone() const { return new Lambda(*this); }
+    virtual ExpressionP clone() const { return make_shared<Lambda>(*this); }
     virtual string name() const { return "Lambda"; }
 };
 

@@ -17,10 +17,10 @@ class If: public Expression {
 public:
     If(const Expression &cnd, const Expression &thn, const Expression &els):
        Expression(cnd, thn, els) {}
-    virtual If* clone() const { return new If(*this); }
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    virtual ExpressionP clone() const { return make_shared<If>(*this); }
+    virtual ExpressionP reeval(Environment* pEnv, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false);
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL);
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP());
     virtual string name() const { return "If"; }
 };
 

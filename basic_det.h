@@ -17,8 +17,8 @@ class Name: public Expression {         \
 public:                                 \
     Name(const Expression &child1, const Expression &child2):       \
          Expression(child1, child2) {}                              \
-    virtual Name* clone() const { return new Name(*this); }         \
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL) \
+    virtual ExpressionP clone() const { return make_shared<Name>(*this); }         \
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP()) \
         { v = children[0]->getValue() Op children[1]->getValue(); } \
     virtual string name() const { return #Op; }                     \
 };
@@ -26,14 +26,16 @@ public:                                 \
 #define MAKE_OP1_CLASS(Name, Op)        \
 class Name##_ : public Expression {     \
 public:                                 \
-    Name##_(const Expression *child1):  \
+    Name##_(const ExpressionConstP child1):  \
         Expression(child1) {}           \
-    virtual Name##_* clone() const { return new Name##_ (*this); }  \
-    virtual void calcValue(double tp = 1.0, Expression *pPartner = NULL) \
+    Name##_(const Expression& child1, bool):  \
+        Expression(child1,true) {}           \
+    virtual ExpressionP clone() const { return make_shared< Name##_ >(*this); }  \
+    virtual void calcValue(double tp = 1.0, ExpressionP pPartner = ExpressionP()) \
         { v = children[0]->getValue().Op(); }                       \
     virtual string name() const { return #Op; }                     \
 };                                      \
-Name##_ Name(const Expression& e);
+inline Name##_ Name(const Expression& e) {return Name##_(e, true);}
 
 
 

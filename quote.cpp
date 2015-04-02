@@ -8,11 +8,11 @@
 
 #include "rand_expr.h"
 
-Expression* Quote_::reeval(Environment *pEnv, Expression *pPartner,
+ExpressionP Quote_::reeval(Environment *pEnv, ExpressionP pPartner,
                            double tp, bool bForceEval) {
-    Quote_ *pEvaluated = this;
+    Quote_P pEvaluated = static_pointer_cast<Quote_>(shared_from_this());
     if(bForceEval || !bEvaluated || v.isRnd()) {
-        pEvaluated = clone();
+        pEvaluated = static_pointer_cast<Quote_>(clone());
         // pEvaluated->children.clear(); // we don't evaluate the child
         pEvaluated->v = children[0];
         // todo? how to set bRnd?
@@ -24,19 +24,18 @@ Expression* Quote_::reeval(Environment *pEnv, Expression *pPartner,
     return pEvaluated;
 }
 
-Quote_ Quote(const Expression &e) { return Quote_(&e); }
 
 
-Expression* Eval_::reeval(Environment *pEnv, Expression *pPartner, double tp, bool bForceEval) {
-    Eval_ *pEvaluated = this;
+ExpressionP Eval_::reeval(Environment *pEnv, ExpressionP pPartner, double tp, bool bForceEval) {
+    Eval_P pEvaluated = static_pointer_cast<Eval_>(shared_from_this());
     if(bForceEval || !bEvaluated || v.isRnd()) {
-        pEvaluated = clone();
+        pEvaluated = static_pointer_cast<Eval_>(clone());
         pEvaluated->children.clear();
-        Expression *child = children[0]->reeval(pEnv, getExprChild(pPartner, 0), tp, bForceEval);
+        ExpressionP child = children[0]->reeval(pEnv, getExprChild(pPartner, 0), tp, bForceEval);
         pEvaluated->children.push_back(child);
-        pEvaluated->v = const_cast<Expression *>
+        pEvaluated->v = 
             (child->getValue().getExpression())->reeval(pEnv,
-                                                        NULL, // TODO?????
+                                                        ExpressionP(), // TODO?????
                                                         tp, bForceEval)->getValue();
         // the problem is - if the quoted expression is itself random
         // its evaluation trace will be lost...
@@ -48,6 +47,5 @@ Expression* Eval_::reeval(Environment *pEnv, Expression *pPartner, double tp, bo
     return pEvaluated;
 }
 
-Eval_ Eval(const Expression &e) { return Eval_(&e); }
 
 

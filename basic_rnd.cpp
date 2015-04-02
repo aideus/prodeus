@@ -14,12 +14,8 @@
 using namespace std;
 
 
-Flip_ Flip() { return Flip_(0.5); }
-Flip_ Flip(double p) { return Flip_(p); }
-Flip_ Flip(const Expression &e) { return Flip_(&e); }
 
-
-void Flip_::calcValue(double tp, Expression *pPartner)
+void Flip_::calcValue(double tp, ExpressionP pPartner)
 {
     if(!v.isDef() || uniform0_samp() < tp) {
         if(!children.empty()) {
@@ -31,7 +27,7 @@ void Flip_::calcValue(double tp, Expression *pPartner)
     }
 }
 
-void Gaussian::calcValue(double tp, Expression *pPartner)
+void Gaussian::calcValue(double tp, ExpressionP pPartner)
 {
     double x0 = children[0]->getValue().getDouble();
     double sigma = children[1]->getValue().getDouble();
@@ -46,12 +42,12 @@ void Gaussian::calcValue(double tp, Expression *pPartner)
 
 
 RndInt_ RndInt(int n) { return RndInt(V(n)); }
-RndInt_ RndInt(const Expression &e) { return RndInt_(&e); }
+RndInt_ RndInt(const Expression &e) { return RndInt_(e, true); }
 
-void RndInt_::calcValue(double tp, Expression *pPartner)
+void RndInt_::calcValue(double tp, ExpressionP pPartner)
 {
     int n = children[0]->getValue().getInt();
-    if(pPartner != NULL && pPartner->name() == name() && pPartner->getValue().isDef()) {
+    if(pPartner && pPartner->name() == name() && pPartner->getValue().isDef()) {
         int perc = rand() % 100;
         //v.data.n = (v.data.n * perc + pPartner->getValue().data.n * (100 - perc)) / 100;
         if(perc < 50) v.data.n = pPartner->getValue().data.n;
@@ -68,7 +64,7 @@ void RndInt_::calcValue(double tp, Expression *pPartner)
 
 
 #ifdef SUPPORT_OPENCV
-void MatRndInt::calcValue(double tp, Expression *pPartner)
+void MatRndInt::calcValue(double tp, ExpressionP pPartner)
 {
     int rows = children[0]->getValue().getInt();
     int cols = children[1]->getValue().getInt();
@@ -83,7 +79,8 @@ void MatRndInt::calcValue(double tp, Expression *pPartner)
             // TODO: <unsigned char> can be incorrect... EACH_MAT2 ?
             EACH_MAT(pMat, (NULL), pIm0->at<unsigned char>(y, x));
         }
-        v = pMat;
+        v = *pMat;
+        delete pMat;
     } else {
         cv::Mat *pMat = const_cast<cv::Mat *>(v.getMat());
         int t; // MatRndInt creates integer matrix
@@ -103,7 +100,7 @@ void MatRndInt::calcValue(double tp, Expression *pPartner)
     v.forceRnd(true);
 }
 
-void MatGaussian::calcValue(double tp, Expression *pPartner)
+void MatGaussian::calcValue(double tp, ExpressionP pPartner)
 {
     int rows = children[0]->getValue().getInt();
     int cols = children[1]->getValue().getInt();
@@ -125,7 +122,8 @@ void MatGaussian::calcValue(double tp, Expression *pPartner)
             // TODO: <unsigned char> can be incorrect... EACH_MAT2 ?
             EACH_MAT(pMat, NULL, gaussian_samp(x0m->at<unsigned char>(y, x), sigma));
         }
-        v = pMat;
+        v = *pMat;
+       delete pMat;
     } else {
         cv::Mat *pMat = const_cast<cv::Mat *>(v.getMat());
         // // we should not destroy previous value during re-evaluation!

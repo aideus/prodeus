@@ -13,24 +13,31 @@
 
 class AnnealingQuery_: public Expression {
 public:
-    AnnealingQuery_(const Expression *prog): Expression(prog) {}
-    virtual Expression* clone() const { return new AnnealingQuery_(*this); }
+    AnnealingQuery_(const ExpressionP prog):       Expression(prog) {}
+    AnnealingQuery_(const Expression& prog, bool): Expression(prog, true) {}
+    virtual ExpressionP clone() const { return make_shared<AnnealingQuery_>(*this); }
     virtual string name() const { return "AnnealingQuery"; }
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    virtual ExpressionP reeval(Environment* pEnv, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false);
 
 };
 
 class GPQuery_: public Expression {
 public:
-    GPQuery_(const Expression *prog): Expression(prog) {}
-    virtual Expression* clone() const { return new GPQuery_(*this); }
+    GPQuery_(const ExpressionP prog): Expression(prog) {}
+    GPQuery_(const Expression& prog, bool): Expression(prog, true) {}
+    virtual ExpressionP clone() const { return make_shared<GPQuery_>(*this); }
     virtual string name() const { return "GPQuery"; }
-    virtual Expression* reeval(Environment *pEnv, Expression *pPartner,
+    virtual ExpressionP reeval(Environment* pEnv, ExpressionP pPartner,
                                double tp = 1.0, bool bForceEval = false);
 };
 
 AnnealingQuery_ AnnealingQuery(const Expression &prog);
-GPQuery_ GPQuery(const Expression &prog);
+GPQuery_        GPQuery(const Expression &prog);
+
+AnnealingQuery_P sAnnealingQuery(const Expression &prog);
+GPQuery_P        sGPQuery(const Expression &prog);
+
+
 
 #endif /* defined(__rand_expr__infer__) */
