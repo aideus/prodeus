@@ -1,5 +1,12 @@
 //pointers.h
 
+//  pointers.h
+//  rand_expr
+//  
+//    Created by Sergey Rodionov on 25/03/15.
+//    Copyright (c) 2015 Alexey Potapov, Sergey Rodionov All rights reserved.
+//  
+
 #ifndef __RAND_EXPR__POINTERS__
 #define __RAND_EXPR__POINTERS__
 

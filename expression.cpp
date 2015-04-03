@@ -3,7 +3,7 @@
 //  rand_expr
 //
 //  Created by Alexey Potapov on 25/01/15.
-//  Copyright (c) 2015 Alexey Potapov, Vita Batishcheva. All rights reserved.
+//  Copyright (c) 2015 Alexey Potapov, Vita Batishcheva, Sergey Rodionov All rights reserved.
 //
 
 
